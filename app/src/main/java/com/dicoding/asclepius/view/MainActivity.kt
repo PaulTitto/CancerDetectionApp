@@ -72,7 +72,9 @@ class MainActivity : AppCompatActivity(), ClassifierListener {
     private fun showImage() {
         currentImageUri?.let {
             Log.d("Image URI", "showImage: $it")
+            binding.previewImageView.setImageDrawable(null)
             binding.previewImageView.setImageURI(it)
+            binding.previewImageView.invalidate()
         }
     }
 

@@ -35,6 +35,6 @@
             android:layout_margin="16dp"
             android:text="@string/result"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-            android:textColor="@color/white" />
+            android:textColor="@color/red" />
     </LinearLayout>
 </ScrollView>
