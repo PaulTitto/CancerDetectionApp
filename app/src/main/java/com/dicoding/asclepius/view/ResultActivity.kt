@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.dicoding.asclepius.R
 import com.dicoding.asclepius.databinding.ActivityResultBinding
 
 class ResultActivity : AppCompatActivity() {
@@ -21,7 +22,8 @@ class ResultActivity : AppCompatActivity() {
             val imageUri = Uri.parse(imageUriString)
             binding.resultImage.setImageURI(imageUri)
         } else {
-            Log.e("ResultActivity", "Image URI is null.")
+            Log.e("ResultActivity", "Image URI is null. Displaying placeholder image.")
+            binding.resultImage.setImageResource(R.drawable.ic_place_holder)
         }
 
         binding.resultText.text = detectImg

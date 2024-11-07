@@ -20,6 +20,8 @@ class MainActivity : AppCompatActivity(), ClassifierListener {
     private lateinit var binding: ActivityMainBinding
     private var currentImageUri: Uri? = null
     private lateinit var imageClassifierHelper: ImageClassifierHelper
+    private var initialImageUri: Uri? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,10 +32,11 @@ class MainActivity : AppCompatActivity(), ClassifierListener {
 
         binding.galleryButton.setOnClickListener { startGallery() }
         binding.analyzeButton.setOnClickListener {
-            currentImageUri?.let {
+            (currentImageUri ?: initialImageUri)?.let {
                 imageClassifierHelper.classifyStaticImage(it)
             } ?: showToast(getString(R.string.empty_image_warning))
         }
+
     }
 
     private fun startGallery() {
@@ -44,16 +47,18 @@ class MainActivity : AppCompatActivity(), ClassifierListener {
         ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
         uri?.let {
-            val destinationUri = Uri.fromFile(File(cacheDir, "cropped_image.jpg"))
+            initialImageUri = it
+            currentImageUri = it
 
+            val destinationUri = Uri.fromFile(File(cacheDir, "cropped_image.jpg"))
             UCrop.of(it, destinationUri)
                 .withAspectRatio(1f, 1f)
                 .withMaxResultSize(1080, 1080)
                 .start(this)
-
-
         } ?: Log.d("Photo Picker", "No media selected")
     }
+
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -66,8 +71,15 @@ class MainActivity : AppCompatActivity(), ClassifierListener {
         } else if (resultCode == UCrop.RESULT_ERROR) {
             val cropError = UCrop.getError(data!!)
             showToast("Crop error: ${cropError?.message}")
+        } else if (resultCode == RESULT_CANCELED && requestCode == UCrop.REQUEST_CROP) {
+            currentImageUri = initialImageUri
+            showImage()
+            showToast("Cropping canceled")
         }
     }
+
+
+
 
     private fun showImage() {
         currentImageUri?.let {
@@ -77,6 +89,7 @@ class MainActivity : AppCompatActivity(), ClassifierListener {
             binding.previewImageView.invalidate()
         }
     }
+
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
@@ -93,7 +106,7 @@ class MainActivity : AppCompatActivity(), ClassifierListener {
                 putExtra(ResultActivity.EXTRA_RESULT, resultText)
             }
             startActivity(intent)
-        } ?: showToast("Error: Image URI is null.")
+        } ?: showToast("Error: No image selected.")
     }
 
     override fun onError(error: String) {
